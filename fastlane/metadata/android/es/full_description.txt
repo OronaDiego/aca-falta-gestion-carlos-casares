@@ -1,7 +1,0 @@
-Plataforma cívica independiente para que la comunidad de Osorno (Chile) reporte baches, fallas de luminarias públicas, microbasurales y socavones en los 951 km² de la comuna (tanto radio urbano como sectores rurales).
-
-Características:
-- Mapa comunal en tiempo real con OpenStreetMap libre.
-- Contador de días de inacción municipal.
-- Generador de oficios formales bajo la Ley N° 18.695 y Ley N° 19.880 para Contraloría.
-- 100 % libre de rastreo y publicidad.

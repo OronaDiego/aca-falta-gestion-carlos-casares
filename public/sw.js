@@ -1,102 +1,55 @@
-// Service Worker para Acá Falta la Muni — Osorno
-// Resiliencia para sectores rurales con nula/baja cobertura (Cancura, Pichil, Forrahue, Curaco)
+// Service worker — Acá falta la muni (Carlos Casares)
+// Página: red primero (siempre la versión nueva) con copia offline de respaldo.
+// Teselas del mapa: caché primero, para que el mapa ande con poca señal.
+const CACHE = 'afm-casares-v1';
+const TILES = 'afm-casares-tiles-v1';
+const MAX_TILES = 600;
 
-const CACHE_NAME = 'aca-falta-muni-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
-  '/icon.svg',
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
-  self.skipWaiting();
-});
+self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== TILES).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });
 
+async function trimTiles() {
+  const cache = await caches.open(TILES);
+  const keys = await cache.keys();
+  for (let i = 0; i < keys.length - MAX_TILES; i++) await cache.delete(keys[i]);
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  // 1. Navegación principal (HTML): Network first, fallback to cached '/'
-  if (request.mode === 'navigate') {
+  if (url.hostname.endsWith('basemaps.cartocdn.com')) {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/') || new Response('Sin conexión', { status: 503 }))
-    );
-    return;
-  }
-
-  // 2. Teselas de OpenStreetMap: Cache first con revalidación de fondo
-  if (url.hostname.includes('tile.openstreetmap.org')) {
-    event.respondWith(
-      caches.open('osm-tiles-cache').then(async (tileCache) => {
-        const cached = await tileCache.match(request);
-        if (cached) return cached;
-        try {
-          const fresh = await fetch(request);
-          if (fresh.ok) {
-            tileCache.put(request, fresh.clone());
-          }
-          return fresh;
-        } catch {
-          return new Response('', { status: 408 });
+      caches.open(TILES).then(async (cache) => {
+        const hit = await cache.match(request);
+        if (hit) return hit;
+        const res = await fetch(request);
+        if (res.ok) {
+          cache.put(request, res.clone());
+          trimTiles();
         }
+        return res;
       })
     );
     return;
   }
 
-  // 3. API GET /api/reports: Network first con respaldo en caché para modo offline rural
-  if (url.pathname.startsWith('/api/reports') && request.method === 'GET') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open('api-cache').then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
+  // Solo cacheamos lo propio del sitio (nunca Firestore ni Nominatim)
+  if (url.origin !== self.location.origin) return;
 
-  // 4. Recursos estáticos (_next, fonts, uploads): Cache first
-  if (url.pathname.startsWith('/_next/') || url.pathname.startsWith('/uploads/') || url.pathname.endsWith('.svg')) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        });
+  event.respondWith(
+    fetch(request)
+      .then((res) => {
+        if (res.ok) caches.open(CACHE).then((c) => c.put(request, res.clone()));
+        return res;
       })
-    );
-    return;
-  }
-
-  // Default: Network fetch
-  event.respondWith(fetch(request).catch(() => caches.match(request)));
+      .catch(() => caches.match(request).then((hit) => hit || caches.match('./')))
+  );
 });

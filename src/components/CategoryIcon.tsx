@@ -1,47 +1,34 @@
-'use client';
-
-import React from 'react';
 import {
-  Construction,
-  Lightbulb,
-  Trash2,
-  Droplets,
-  Trees,
   Accessibility,
-  AlertTriangle,
-  Dog,
-  Flame,
-  HelpCircle,
-  LucideProps,
+  Car,
+  CircleHelp,
+  CloudRain,
+  Droplets,
+  Leaf,
+  Lightbulb,
+  PawPrint,
+  TrafficCone,
+  Trash2,
+  Trees,
+  type LucideIcon,
 } from 'lucide-react';
-import { ReportCategory } from '@/types/report';
+import type { ReportCategory } from '@/types/report';
 
-interface CategoryIconProps extends LucideProps {
-  category: ReportCategory;
-}
-
-export const CategoryIcon: React.FC<CategoryIconProps> = ({ category, ...props }) => {
-  switch (category) {
-    case 'calles':
-      return <Construction {...props} />;
-    case 'iluminacion':
-      return <Lightbulb {...props} />;
-    case 'limpieza':
-      return <Trash2 {...props} />;
-    case 'aguas':
-      return <Droplets {...props} />;
-    case 'espacios_publicos':
-      return <Trees {...props} />;
-    case 'accesibilidad':
-      return <Accessibility {...props} />;
-    case 'transito':
-      return <AlertTriangle {...props} />;
-    case 'bienestar_animal':
-      return <Dog {...props} />;
-    case 'medio_ambiente':
-      return <Flame {...props} />;
-    case 'otros':
-    default:
-      return <HelpCircle {...props} />;
-  }
+const ICONS: Record<ReportCategory, LucideIcon> = {
+  accesibilidad: Accessibility,
+  agua: Droplets,
+  ambiente: Leaf,
+  animales: PawPrint,
+  calles: Car,
+  espacios: Trees,
+  iluminacion: Lightbulb,
+  inundaciones: CloudRain,
+  limpieza: Trash2,
+  transito: TrafficCone,
+  otros: CircleHelp,
 };
+
+export function CategoryIcon({ category, className }: { category: ReportCategory; className?: string }) {
+  const Icon = ICONS[category] ?? CircleHelp;
+  return <Icon className={className} strokeWidth={2.4} aria-hidden />;
+}

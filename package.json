@@ -1,28 +1,30 @@
 {
-  "name": "aca-falta-la-muni-osorno",
-  "version": "1.0.0",
+  "name": "aca-falta-la-muni-carlos-casares",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "test": "node scripts/verify-core.mjs",
-    "lint": "eslint"
+    "start": "npx serve out",
+    "lint": "eslint",
+    "test": "tsx --test scripts/tests/*.test.ts",
+    "carteles": "tsx scripts/generar-carteles.mjs",
+    "test:reglas": "firebase emulators:exec --only firestore --project demo-acafaltalamuni \"tsx --test scripts/tests-reglas/*.test.ts\""
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.2",
-    "@capacitor/core": "^8.5.2",
-    "clsx": "^2.1.1",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/archivo-black": "^5.3.0",
     "firebase": "^12.19.0",
     "leaflet": "^1.9.4",
+    "lucide": "^1.53.0",
     "lucide-react": "^1.45.0",
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "tailwind-merge": "^3.7.0"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.2",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
@@ -30,7 +32,15 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "firebase-tools": "^15.33.0",
+    "playwright": "1.56",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=22.6"
   }
 }

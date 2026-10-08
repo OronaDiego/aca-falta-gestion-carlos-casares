@@ -1,9 +1,0 @@
-Civic reporting platform for the community of Osorno, Chile.
-
-Report potholes, faulty streetlights, illegal waste dumps, and sinkholes across the 951 km² of the municipality (urban and rural sectors).
-
-Features:
-- Real-time community map with OpenStreetMap.
-- Inaction counter for municipal delays.
-- Formal civic complaints generator under Chilean Laws N° 18.695 and N° 19.880 for Contraloría.
-- 100 % tracker-free and ad-free.

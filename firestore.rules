@@ -1,128 +1,97 @@
 rules_version = '2';
+
+// Reglas de seguridad — Acá Falta la Muni (Carlos Casares)
+//
+// Principios:
+//  - Los reclamos son públicos y de solo lectura una vez creados.
+//  - Desde la web solo se puede crear un reclamo y sumar apoyos (+1 de a uno).
+//  - Cambiar estado (resuelto / en revisión) u ocultar un reclamo se hace
+//    únicamente desde la consola de Firebase (o un panel admin futuro con login).
+//  - Los datos de contacto de los vecinos van a una colección que NADIE puede leer desde la web.
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
-    // Reglas Blindadas de Seguridad Ciudadana - Acá Falta la Muni (Osorno)
-    // Auditoría de Seguridad: Red Team / OWASP / Prevención de Abusos
-    // ===============================================================
-
-    function isValidCategory(cat) {
-      return cat in ['calles', 'iluminacion', 'limpieza', 'aguas', 'espacios', 'accesibilidad', 'transito', 'animales', 'medio_ambiente', 'otros'];
+    function validCategory(c) {
+      return c in ['accesibilidad', 'agua', 'ambiente', 'animales', 'calles', 'espacios',
+                   'iluminacion', 'inundaciones', 'limpieza', 'transito', 'otros'];
     }
 
-    function isValidStatus(st) {
-      return st in ['pendiente', 'en_revision', 'resuelto'];
+    // Rectángulo del Partido de Carlos Casares (igual que LIMITES_PARTIDO en src/config/ciudad.ts)
+    function insidePartido(d) {
+      return d.latitude is number && d.longitude is number
+        && d.latitude >= -36.08 && d.latitude <= -35.37
+        && d.longitude >= -61.73 && d.longitude <= -61.02;
     }
 
-    // 1. Validación estricta de creación de reportes
-    function isValidReportCreate(data) {
-      return data.keys().hasAll(['title', 'description', 'category', 'sector', 'latitude', 'longitude', 'status', 'support_count', 'created_at'])
-        // Título delimitado
-        && data.title is string && data.title.size() >= 3 && data.title.size() <= 100
-        // Descripción acotada (previene saturación / buffer abuse)
-        && data.description is string && data.description.size() >= 5 && data.description.size() <= 1500
-        && isValidCategory(data.category)
-        && data.sector is string && data.sector.size() >= 2 && data.sector.size() <= 80
-        // Coordenadas estrictamente confinadas a la provincia / comuna de Osorno
-        && data.latitude is number && data.latitude >= -42.0 && data.latitude <= -39.0
-        && data.longitude is number && data.longitude >= -75.0 && data.longitude <= -71.0
-        && data.status in ['pendiente', 'en_revision']
-        // Apoyos iniciales seguros
-        && data.support_count is number && data.support_count >= 0 && data.support_count <= 5
-        && data.created_at is string;
+    function shortString(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
     }
 
-    // 2. Validación estricta de actualización (Elimina el 'Update Bypass' y preserva inmutabilidad)
-    function isValidReportUpdate(data, prev) {
-      // Campos absolutamente inmutables una vez creada la denuncia
-      let immutablePreserved = 
-        data.title == prev.title
-        && data.description == prev.description
-        && data.category == prev.category
-        && data.sector == prev.sector
-        && data.latitude == prev.latitude
-        && data.longitude == prev.longitude
-        && data.created_at == prev.created_at
-        && (prev.get('id', '') == '' || data.id == prev.id)
-        && (prev.get('author_name', '') == '' || data.author_name == prev.author_name)
-        && (prev.get('is_anonymous', false) == false || data.is_anonymous == prev.is_anonymous);
-
-      // Mutaciones legítimas permitidas por la aplicación:
-      // Caso A: Apoyo cívico (+1 o -1 sin saltos gigantescos)
-      let isSupportMutation = 
-        data.support_count is number
-        && (data.support_count == prev.support_count + 1 || data.support_count == prev.support_count - 1 || data.support_count == prev.support_count)
-        && data.status == prev.status;
-
-      // Caso B: Moderación comunitaria (acumulación de marcas o censura preventiva con >= 3)
-      let isModerationMutation = 
-        data.flags_count is number
-        && data.flags_count >= prev.get('flags_count', 0)
-        && data.flags_count <= prev.get('flags_count', 0) + 1
-        && (data.is_hidden is bool);
-
-      // Caso C: Marcado de resolución (con evidencia opcional)
-      let isResolutionMutation = 
-        isValidStatus(data.status)
-        && (data.status != 'resuelto' || data.resolved_at is string);
-
-
-      return immutablePreserved && (isSupportMutation || isModerationMutation || isResolutionMutation);
+    function validNewReport(id, d) {
+      return d.keys().hasOnly(['id', 'created_at', 'description', 'category', 'sector', 'is_rural',
+                               'address', 'latitude', 'longitude', 'image_url', 'previously_reported',
+                               'status', 'support_count', 'is_hidden'])
+        && d.keys().hasAll(['id', 'created_at', 'description', 'category', 'sector', 'is_rural',
+                            'address', 'latitude', 'longitude', 'image_url', 'previously_reported',
+                            'status', 'support_count', 'is_hidden'])
+        && d.id == id
+        && shortString(d.created_at, 20, 30)
+        && shortString(d.description, 5, 1000)
+        && validCategory(d.category)
+        && shortString(d.sector, 2, 60)
+        && d.is_rural is bool
+        && shortString(d.address, 0, 160)
+        && insidePartido(d)
+        // Foto obligatoria, comprimida en el navegador (data URL de imagen, máx ~700 KB)
+        && d.image_url is string && d.image_url.size() <= 700000
+        && d.image_url.matches('^data:image/(webp|jpeg|png);base64,.*')
+        && d.previously_reported is bool
+        // Valores iniciales fijos: nadie puede crear un reclamo ya "resuelto", oculto o con apoyos inflados
+        && d.status == 'pendiente'
+        && d.support_count == 0
+        && d.is_hidden == false;
     }
 
-    // 3. Validación de comentarios comunitarios
-    function isValidCommentCreate(data) {
-      return data.keys().hasAll(['report_id', 'comment', 'created_at', 'author_name', 'is_anonymous'])
-        && data.report_id is string && data.report_id.size() >= 3 && data.report_id.size() <= 80
-        && data.comment is string && data.comment.size() >= 2 && data.comment.size() <= 600
-        && data.author_name is string && data.author_name.size() >= 2 && data.author_name.size() <= 80
-        && data.is_anonymous is bool
-        && data.created_at is string;
-    }
-
-    // Colección: Denuncias ciudadanas
     match /reports/{reportId} {
-      // Lectura abierta para transparencia cívica comunal
       allow read: if true;
-      
-      // Creación con validación estricta de estructura y límites de longitud
-      allow create: if isValidReportCreate(request.resource.data);
+      allow create: if validNewReport(reportId, request.resource.data);
 
-      // Actualización protegida: campos inmutables bloqueados y cambios de estado regulados
-      allow update: if isValidReportUpdate(request.resource.data, resource.data);
+      // Único cambio permitido desde la web: sumar exactamente +1 apoyo.
+      // (Sin login no se puede atar el apoyo a una persona; ver "Próximos pasos" en el README.)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['support_count'])
+        && request.resource.data.support_count == resource.data.support_count + 1;
 
-      // Prohibido el borrado para preservar el registro histórico de inacción municipal
       allow delete: if false;
     }
 
-    // Colección: Apoyos únicos por dispositivo (+1)
+    // Un apoyo por dispositivo y reclamo (el id del documento es reportId_deviceId)
     match /supports/{supportId} {
-      allow read: if true;
-      allow create: if request.resource.data.report_id is string 
-                    && request.resource.data.device_id is string
-                    && request.resource.data.report_id.size() > 0
-                    && request.resource.data.device_id.size() > 0
-                    && request.resource.data.created_at is string;
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['report_id', 'device_id', 'created_at'])
+        && shortString(request.resource.data.report_id, 3, 80)
+        && shortString(request.resource.data.device_id, 3, 80)
+        && supportId == request.resource.data.report_id + '_' + request.resource.data.device_id
+        && exists(/databases/$(database)/documents/reports/$(request.resource.data.report_id));
       allow update, delete: if false;
     }
 
-    // Colección: Denuncias de moderación
-    match /moderation_flags/{flagId} {
-      allow read: if true;
-      allow create: if request.resource.data.report_id is string 
-                    && request.resource.data.device_id is string
-                    && request.resource.data.report_id.size() > 0
-                    && request.resource.data.device_id.size() > 0
-                    && request.resource.data.created_at is string;
+    // Datos de contacto: se pueden dejar, pero no leer. Se consultan desde la consola de Firebase.
+    match /contacts/{reportId} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['report_id', 'first_name', 'last_name', 'phone', 'created_at'])
+        && request.resource.data.report_id == reportId
+        && shortString(request.resource.data.first_name, 0, 60)
+        && shortString(request.resource.data.last_name, 0, 60)
+        && shortString(request.resource.data.phone, 0, 30)
+        && shortString(request.resource.data.created_at, 20, 30)
+        && existsAfter(/databases/$(database)/documents/reports/$(reportId));
       allow update, delete: if false;
     }
 
-    // Colección: Muro de comentarios vecinales
-    match /comments/{commentId} {
-      allow read: if true;
-      allow create: if isValidCommentCreate(request.resource.data);
-      allow update, delete: if false;
+    // Todo lo demás, cerrado
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

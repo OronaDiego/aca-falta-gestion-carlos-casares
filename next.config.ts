@@ -1,18 +1,14 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
-const isGithubPages = process.env.GITHUB_PAGES === 'true';
+// Para publicar en una subcarpeta (ej. GitHub Pages: usuario.github.io/repo) definí BASE_PATH=/repo
+const basePath = process.env.BASE_PATH || '';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: isGithubPages ? '/aca-falta-la-muni-osorno' : '',
-  assetPrefix: isGithubPages ? '/aca-falta-la-muni-osorno/' : undefined,
+  basePath,
   trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
-  env: {
-    NEXT_PUBLIC_BASE_PATH: isGithubPages ? '/aca-falta-la-muni-osorno' : '',
-  },
+  images: { unoptimized: true },
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
 };
 
 export default nextConfig;

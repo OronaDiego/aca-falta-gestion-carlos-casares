@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Acá Falta la Muni</string>
-    <string name="title_activity_main">Acá Falta la Muni</string>
-    <string name="package_name">cl.acafaltalamuni.osorno</string>
-    <string name="custom_url_scheme">cl.acafaltalamuni.osorno</string>
-</resources>

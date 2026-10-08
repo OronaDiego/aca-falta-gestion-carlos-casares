@@ -1,79 +1,46 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import '@fontsource-variable/inter';
+import '@fontsource/archivo-black';
+import '@fontsource/anton';
 import './globals.css';
+import { CIUDAD } from '@/config/ciudad';
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-});
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const title = `Acá falta la muni — Mapa de reclamos urbanos en ${CIUDAD.nombre}`;
+const description = `Mapa interactivo de reclamos urbanos en ${CIUDAD.nombre}. Reportá lo que falta en tu barrio y ayudá a construir una mejor ciudad.`;
 
 export const metadata: Metadata = {
-  title: 'Acá falta la muni — Mapa de reclamos urbanos en Osorno',
-  description:
-    'Mapa interactivo y colaborativo de reclamos ciudadanos en Osorno, Chile. Reporta baches, luminarias, microbasurales y fallas urbanas en tu barrio.',
-  authors: [{ name: 'Pablo Benavides Jorquera' }],
-  creator: 'Pablo Benavides Jorquera',
-  keywords: [
-    'Osorno',
-    'Acá falta la muni',
-    'Reclamos urbanos Osorno',
-    'Municipalidad de Osorno',
-    'Baches Osorno',
-    'Rahue',
-    'Francke',
-    'Ovejería',
-    'Civic Tech Chile',
-  ],
+  metadataBase: new URL(CIUDAD.urlPublica),
+  title,
+  description,
   openGraph: {
-    title: 'Acá falta la muni — Osorno',
-    description:
-      'Fiscalización ciudadana en tiempo real de problemáticas barriales en la comuna de Osorno.',
-    url: 'https://acafaltalamuni-osorno.cl',
-    siteName: 'Acá falta la muni Osorno',
-    locale: 'es_CL',
+    title,
+    description,
+    url: CIUDAD.urlPublica,
+    siteName: 'Acá falta la muni',
+    locale: 'es_AR',
     type: 'website',
+    images: [{ url: `${BASE}/og.png`, width: 1200, height: 630, alt: `Mapa de reclamos urbanos de ${CIUDAD.nombre}` }],
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Acá falta la muni — Osorno',
-    description: 'Fiscalización ciudadana en tiempo real de problemáticas barriales en Osorno.',
-  },
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/icon.svg',
-    apple: '/icon.svg',
-  },
+  twitter: { card: 'summary_large_image', title, description, images: [`${BASE}/og.png`] },
+  manifest: `${BASE}/manifest.json`,
+  icons: { icon: `${BASE}/icon.svg`, apple: `${BASE}/icon-192.png` },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: '#141414',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${inter.variable} dark h-full antialiased`}>
-      <body className="h-full w-full overflow-hidden bg-[#141414] text-white selection:bg-[#F4CA19] selection:text-black">
+    <html lang="es-AR">
+      <body>
         {children}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                    console.log('SW registration error: ', err);
-                  });
-                });
-              }
-            `,
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('${BASE}/sw.js').catch(function(){});});}`,
           }}
         />
       </body>

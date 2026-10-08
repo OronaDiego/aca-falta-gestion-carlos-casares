@@ -1,8 +1,0 @@
-{
-  "appId": "cl.acafaltalamuni.osorno",
-  "appName": "Acá Falta la Muni",
-  "webDir": "out",
-  "server": {
-    "androidScheme": "https"
-  }
-}

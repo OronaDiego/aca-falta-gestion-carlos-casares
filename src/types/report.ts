@@ -1,113 +1,62 @@
 export type ReportStatus = 'pendiente' | 'en_revision' | 'resuelto';
 
 export type ReportCategory =
-  | 'calles'
-  | 'iluminacion'
-  | 'limpieza'
-  | 'aguas'
-  | 'espacios_publicos'
   | 'accesibilidad'
+  | 'agua'
+  | 'ambiente'
+  | 'animales'
+  | 'calles'
+  | 'espacios'
+  | 'iluminacion'
+  | 'inundaciones'
+  | 'limpieza'
   | 'transito'
-  | 'bienestar_animal'
-  | 'medio_ambiente'
   | 'otros';
 
+/** Documento público de la colección `reports`. No contiene datos personales. */
 export interface Report {
   id: string;
   created_at: string;
-  updated_at: string;
-  resolved_at?: string;
-  title: string;
   description: string;
   category: ReportCategory;
+  /** Barrio o localidad más cercana (se calcula sola). */
   sector: string;
   is_rural: boolean;
-  address_reference: string;
+  /** Dirección aproximada obtenida de OpenStreetMap. */
+  address: string;
   latitude: number;
   longitude: number;
-  image_url?: string;
-  resolved_image_url?: string;
-  author_name: string;
-  is_anonymous: boolean;
+  /** Foto comprimida en WebP/JPEG como data URL. */
+  image_url: string;
+  /** El vecino marcó que ya lo había reclamado antes al municipio. */
+  previously_reported: boolean;
   status: ReportStatus;
   support_count: number;
-  days_unresolved?: number;
-  days_to_resolve?: number;
-  flags_count?: number;
-  is_hidden?: boolean;
-  comments_count?: number;
+  resolved_at?: string;
+  /** Lo pone en `true` un administrador desde la consola de Firebase para ocultar un reclamo. */
+  is_hidden: boolean;
 }
 
-export interface ReportComment {
-  id: string;
+/** Documento privado de la colección `contacts` (nadie puede leerlo desde la web). */
+export interface ReportContact {
   report_id: string;
-  author_name: string;
-  is_anonymous: boolean;
-  comment: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
   created_at: string;
-  device_id?: string;
 }
 
 export interface CategoryInfo {
   id: ReportCategory;
   name: string;
   description: string;
-  color: string;
-  iconName: string;
+  /** Nombre de ícono de lucide. */
+  icon: string;
 }
 
-export interface StatsSummary {
-  totalActive: number;
-  totalResolved: number;
-  topCategory: string;
-  topSector: string;
-  resolutionRatePercent: number;
-  averageDaysUnresolved?: number;
-  averageDaysToResolve?: number;
-}
+export type NewReportInput = Pick<
+  Report,
+  'description' | 'category' | 'latitude' | 'longitude' | 'address' | 'image_url' | 'previously_reported'
+>;
 
-export interface CategoryStat {
-  category: ReportCategory;
-  name: string;
-  total: number;
-  unresolved: number;
-  resolved: number;
-  avgDaysUnresolved: number;
-  avgDaysToResolve: number;
-}
-
-export interface SectorStat {
-  sector: string;
-  isRural: boolean;
-  total: number;
-  unresolved: number;
-  resolved: number;
-  avgDaysUnresolved: number;
-  avgDaysToResolve: number;
-}
-
-export interface MunicipalBehaviorStats {
-  totalReports: number;
-  activeReports: number;
-  resolvedReports: number;
-  overallResolutionRate: number;
-  avgDaysToResolveCommunal: number;
-  avgDaysUnresolvedCommunal: number;
-  urbanStats: {
-    total: number;
-    unresolved: number;
-    resolved: number;
-    avgDaysToResolve: number;
-    avgDaysUnresolved: number;
-  };
-  ruralStats: {
-    total: number;
-    unresolved: number;
-    resolved: number;
-    avgDaysToResolve: number;
-    avgDaysUnresolved: number;
-  };
-  categories: CategoryStat[];
-  topCriticalSectors: SectorStat[];
-  top10Unresolved: Report[];
-}
+export type NewContactInput = Pick<ReportContact, 'first_name' | 'last_name' | 'phone'>;

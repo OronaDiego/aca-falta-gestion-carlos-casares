@@ -1,72 +1,56 @@
 /**
- * Compresión de imágenes de lado cliente utilizando la API Canvas nativa (Filosofía Ponytail).
- * Cero dependencias externas en el bundle. Reduce fotos móviles de 5 MB a WebP de ~200-400 KB.
+ * Comprime una foto en el navegador (canvas) y la devuelve como data URL WebP/JPEG.
+ * Se achica hasta quedar por debajo de `maxBytes`, porque Firestore admite
+ * documentos de hasta 1 MB y la regla de seguridad limita la foto a ~700 KB.
  */
-export async function compressImage(
-  file: File,
-  maxDimension = 960,
-  quality = 0.72
-): Promise<string> {
+export const MAX_INPUT_BYTES = 5 * 1024 * 1024;
+const MAX_OUTPUT_CHARS = 700_000;
+
+function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    // Si no es imagen, rechazar de inmediato
-    if (!file.type.startsWith('image/')) {
-      reject(new Error('El archivo seleccionado no es una imagen válida.'));
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = (readerEvent) => {
-      const img = new Image();
-
-      img.onload = () => {
-        let { width, height } = img;
-
-        // Calcular escalamiento proporcional si excede dimensión máxima
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          // Si el contexto falla, degradar al DataURL original
-          resolve(readerEvent.target?.result as string);
-          return;
-        }
-
-        // Dibujar con suavizado
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Preferir formato WebP moderno, con respaldo a JPEG
-        const webpData = canvas.toDataURL('image/webp', quality);
-        if (webpData && webpData.startsWith('data:image/webp')) {
-          resolve(webpData);
-        } else {
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        }
-      };
-
-      img.onerror = () => reject(new Error('Error al decodificar la imagen en el navegador.'));
-      img.src = readerEvent.target?.result as string;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
     };
-
-    reader.onerror = () => reject(new Error('Error al leer el archivo de la imagen.'));
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('No se pudo leer la imagen.'));
+    };
+    img.src = url;
   });
 }
 
-export async function uploadImageToServer(base64Data: string): Promise<string> {
-  return base64Data;
+export async function compressImage(file: File): Promise<string> {
+  if (!/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type)) {
+    throw new Error('El archivo tiene que ser una foto JPG, PNG o WebP.');
+  }
+  if (file.size > MAX_INPUT_BYTES) {
+    throw new Error('La foto pesa más de 5 MB.');
+  }
+
+  const img = await loadImage(file);
+  const attempts: [number, number][] = [
+    [1280, 0.72],
+    [1024, 0.68],
+    [880, 0.62],
+    [720, 0.55],
+  ];
+
+  for (const [maxDim, quality] of attempts) {
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) break;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    let data = canvas.toDataURL('image/webp', quality);
+    if (!data.startsWith('data:image/webp')) data = canvas.toDataURL('image/jpeg', quality);
+    if (data.length <= MAX_OUTPUT_CHARS) return data;
+  }
+  throw new Error('No pudimos achicar la foto lo suficiente. Probá con otra.');
 }
