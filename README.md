@@ -96,6 +96,36 @@ Nombre, apellido y teléfono son opcionales y se guardan en una colección priva
 - **Fotos en Firebase Storage** en vez de dentro del documento, si el volumen crece. Requiere el plan Blaze.
 - Sumar barrios de la ciudad a `LUGARES`.
 
+## Trabajar en equipo
+
+Repositorio: https://github.com/OronaDiego/aca-falta-gestion-carlos-casares · Sitio: https://aca-falta-gestion-casares.web.app
+
+**Primera vez (cada colaborador):**
+1. Instalar Node.js 22, Git y VS Code.
+2. Configurar Git: `git config --global user.name "Nombre"`, `git config --global user.email "mail@github"` y `git config --global credential.helper manager`.
+3. `git clone https://github.com/OronaDiego/aca-falta-gestion-carlos-casares.git`, entrar a la carpeta y `npm install`.
+4. Crear `.env.local` (copiar `.env.example` y completar con los valores de Firebase → Configuración del proyecto → Tus apps).
+5. `npx firebase login` y `npm run dev`.
+
+**Para cada cambio (con revisión por Pull Request):**
+```bash
+git checkout main && git pull
+git checkout -b nombre-del-cambio
+# editar y probar con npm run dev
+git add -A && git commit -m "Qué cambió"
+git push -u origin nombre-del-cambio
+```
+Luego abrir el Pull Request en GitHub; otro integrante lo revisa y hace *Merge*.
+
+**Publicar** (siempre desde `main` actualizado; subir a GitHub no publica):
+```bash
+git checkout main && git pull
+npm run build
+npx firebase deploy --only hosting
+```
+
+Las imágenes alternativas del hero están en `assets/` (no se publican). La que usa la web es `public/hero.webp`.
+
 ## Licencia
 
 GNU AGPL-3.0 o posterior (ver `LICENSE`). Si publican una versión modificada, tienen que ofrecer su código fuente a los usuarios. El pie del sitio ya tiene el enlace.

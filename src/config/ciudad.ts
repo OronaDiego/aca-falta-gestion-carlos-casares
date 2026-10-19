@@ -18,7 +18,7 @@ export const CIUDAD = {
   // Mail para consultas y pedidos de baja de datos personales (Ley 25.326). Completar antes de publicar.
   emailContacto: '',
   // Repositorio público del código (la licencia AGPL-3.0 obliga a ofrecerlo). Cambiar por el de ustedes.
-  codigoFuente: 'https://github.com/elpabloultron/aca-falta-la-muni-osorno',
+  codigoFuente: 'https://github.com/OronaDiego/aca-falta-gestion-carlos-casares',
 } as const;
 
 /**
