@@ -35,7 +35,7 @@ function sign(fill) {
     <g fill="#141414" font-family="Anton" text-anchor="middle">
       <text x="100" y="72" font-size="25">ACÁ</text>
       <text x="100" y="99" font-size="25">FALTA</text>
-      <text x="100" y="126" font-size="25">LA MUNI</text>
+      <text x="100" y="126" font-size="25">GESTIÓN</text>
     </g>
     <path d="M100 134 v18 M92 145 l8 9 l8 -9" stroke="#141414" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
@@ -65,7 +65,7 @@ function poster(color) {
     <div class="stripe"></div>
     <div class="main">
       <div class="sign">${sign(color ? '#F4CA19' : '#FFFFFF')}</div>
-      <h2>LO QUE VEMOS<br>LO QUE FALTA</h2>
+      <h2>EL MAPA DE<br>LO QUE FALTA</h2>
       <div class="row">
         <div class="qr">${qr}</div>
         <div class="cta">Este reclamo está en el mapa de ${CIUDAD.nombre}.<br>Sumá el tuyo:<b>${shortUrl}</b></div>
@@ -86,7 +86,7 @@ function og() {
     .stripe { height: 70px; background: repeating-linear-gradient(-45deg,#F4CA19 0 44px,#141414 44px 88px); border-top: 6px solid #141414; }
   </style></head><body>
     <div class="top"><div class="sign">${sign('#F4CA19')}</div>
-      <div><h1>LO QUE VEMOS<br>LO QUE FALTA</h1><p>Mapa de reclamos de ${CIUDAD.nombre}</p></div></div>
+      <div><h1>EL MAPA DE<br>LO QUE FALTA</h1><p>Mapa de reclamos de ${CIUDAD.nombre}</p></div></div>
     <div class="stripe"></div>
   </body></html>`;
 }

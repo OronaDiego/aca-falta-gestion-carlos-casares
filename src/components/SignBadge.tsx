@@ -6,10 +6,10 @@ interface SignBadgeProps {
 }
 
 /**
- * Cartel de obra en rombo "ACÁ FALTA LA MUNI ↓". Dibujado en SVG propio
+ * Cartel de obra en rombo "ACÁ FALTA GESTIÓN ↓". Dibujado en SVG propio
  * (no es una imagen de terceros), así escala nítido en pantalla y en impresión.
  */
-export function SignBadge({ className, variant = 'color', title = 'Acá falta la muni' }: SignBadgeProps) {
+export function SignBadge({ className, variant = 'color', title = 'Acá falta gestión' }: SignBadgeProps) {
   const fill = variant === 'color' ? '#F4CA19' : '#FFFFFF';
   return (
     <svg viewBox="0 0 200 200" className={className} role="img" aria-label={title}>
@@ -29,7 +29,7 @@ export function SignBadge({ className, variant = 'color', title = 'Acá falta la
       <g fill="#141414" fontFamily="var(--font-sign), 'Anton', Impact, sans-serif" textAnchor="middle">
         <text x="100" y="72" fontSize="25" letterSpacing="0.5">ACÁ</text>
         <text x="100" y="99" fontSize="25" letterSpacing="0.5">FALTA</text>
-        <text x="100" y="126" fontSize="25" letterSpacing="0.5">LA MUNI</text>
+        <text x="100" y="126" fontSize="25" letterSpacing="0.5">GESTIÓN</text>
       </g>
       <path d="M100 134 v18 M92 145 l8 9 l8 -9" stroke="#141414" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>

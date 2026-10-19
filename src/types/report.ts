@@ -26,8 +26,6 @@ export interface Report {
   address: string;
   latitude: number;
   longitude: number;
-  /** Foto comprimida en WebP/JPEG como data URL. */
-  image_url: string;
   /** El vecino marcó que ya lo había reclamado antes al municipio. */
   previously_reported: boolean;
   status: ReportStatus;
@@ -35,6 +33,18 @@ export interface Report {
   resolved_at?: string;
   /** Lo pone en `true` un administrador desde la consola de Firebase para ocultar un reclamo. */
   is_hidden: boolean;
+}
+
+/**
+ * Documento de la colección `photos` (mismo id que el reclamo).
+ * La foto va aparte para que el mapa cargue solo datos livianos y la imagen
+ * se descargue recién cuando alguien abre el reclamo.
+ */
+export interface ReportPhoto {
+  report_id: string;
+  /** Foto comprimida en WebP/JPEG como data URL. */
+  image_url: string;
+  created_at: string;
 }
 
 /** Documento privado de la colección `contacts` (nadie puede leerlo desde la web). */
@@ -56,7 +66,7 @@ export interface CategoryInfo {
 
 export type NewReportInput = Pick<
   Report,
-  'description' | 'category' | 'latitude' | 'longitude' | 'address' | 'image_url' | 'previously_reported'
->;
+  'description' | 'category' | 'latitude' | 'longitude' | 'address' | 'previously_reported'
+> & { image_url: string };
 
 export type NewContactInput = Pick<ReportContact, 'first_name' | 'last_name' | 'phone'>;

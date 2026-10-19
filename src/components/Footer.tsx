@@ -5,7 +5,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 function shareLinks() {
   const url = encodeURIComponent(CIUDAD.urlPublica);
-  const text = encodeURIComponent(`Acá falta la muni — marcá en el mapa lo que falta en ${CIUDAD.nombre}`);
+  const text = encodeURIComponent(`Acá falta gestión — marcá en el mapa lo que falta en ${CIUDAD.nombre}`);
   return {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
     x: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
@@ -20,7 +20,7 @@ export function Footer() {
   return (
     <footer className="bg-brand-yellow px-4 pb-10 pt-8 text-center text-ink">
       <p className="mx-auto max-w-md text-[15px] font-semibold leading-snug">
-        Descargá tu cartel de <strong className="font-extrabold">&lsquo;Acá falta la muni&rsquo;</strong> para intervenir el
+        Descargá tu cartel de <strong className="font-extrabold">&lsquo;Acá falta Gestión&rsquo;</strong> para intervenir el
         lugar del reclamo
       </p>
 

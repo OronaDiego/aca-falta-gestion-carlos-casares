@@ -12,7 +12,7 @@ export const CIUDAD = {
   provincia: 'Buenos Aires',
   pais: 'Argentina',
   // URL pública donde se va a publicar el sitio (se usa para compartir y en los carteles)
-  urlPublica: 'https://acafaltalamuni-casares.web.app',
+  urlPublica: 'https://aca-falta-gestion-casares.web.app',
   // Perfil de Instagram para el botón de redes (dejar vacío para ocultarlo)
   instagram: '',
   // Mail para consultas y pedidos de baja de datos personales (Ley 25.326). Completar antes de publicar.

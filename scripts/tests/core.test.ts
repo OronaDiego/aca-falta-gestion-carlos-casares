@@ -62,7 +62,6 @@ const base: Report = {
   address: '',
   latitude: -35.6232,
   longitude: -61.365,
-  image_url: 'data:image/webp;base64,AAAA',
   previously_reported: false,
   status: 'pendiente',
   support_count: 0,

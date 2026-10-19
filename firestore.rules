@@ -30,10 +30,10 @@ service cloud.firestore {
 
     function validNewReport(id, d) {
       return d.keys().hasOnly(['id', 'created_at', 'description', 'category', 'sector', 'is_rural',
-                               'address', 'latitude', 'longitude', 'image_url', 'previously_reported',
+                               'address', 'latitude', 'longitude', 'previously_reported',
                                'status', 'support_count', 'is_hidden'])
         && d.keys().hasAll(['id', 'created_at', 'description', 'category', 'sector', 'is_rural',
-                            'address', 'latitude', 'longitude', 'image_url', 'previously_reported',
+                            'address', 'latitude', 'longitude', 'previously_reported',
                             'status', 'support_count', 'is_hidden'])
         && d.id == id
         && shortString(d.created_at, 20, 30)
@@ -43,9 +43,6 @@ service cloud.firestore {
         && d.is_rural is bool
         && shortString(d.address, 0, 160)
         && insidePartido(d)
-        // Foto obligatoria, comprimida en el navegador (data URL de imagen, máx ~700 KB)
-        && d.image_url is string && d.image_url.size() <= 700000
-        && d.image_url.matches('^data:image/(webp|jpeg|png);base64,.*')
         && d.previously_reported is bool
         // Valores iniciales fijos: nadie puede crear un reclamo ya "resuelto", oculto o con apoyos inflados
         && d.status == 'pendiente'
@@ -55,7 +52,9 @@ service cloud.firestore {
 
     match /reports/{reportId} {
       allow read: if true;
-      allow create: if validNewReport(reportId, request.resource.data);
+      // La foto es obligatoria: el reclamo solo se acepta si en la misma operación se crea su foto
+      allow create: if validNewReport(reportId, request.resource.data)
+        && existsAfter(/databases/$(database)/documents/photos/$(reportId));
 
       // Único cambio permitido desde la web: sumar exactamente +1 apoyo.
       // (Sin login no se puede atar el apoyo a una persona; ver "Próximos pasos" en el README.)
@@ -63,6 +62,22 @@ service cloud.firestore {
         && request.resource.data.support_count == resource.data.support_count + 1;
 
       allow delete: if false;
+    }
+
+    // Fotos: un documento por reclamo, con el mismo id. Se lee solo al abrir el reclamo.
+    match /photos/{reportId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['report_id', 'image_url', 'created_at'])
+        && request.resource.data.report_id == reportId
+        && shortString(request.resource.data.created_at, 20, 30)
+        // Foto comprimida en el navegador (data URL de imagen, máx ~700 KB)
+        && request.resource.data.image_url is string
+        && request.resource.data.image_url.size() <= 700000
+        && request.resource.data.image_url.matches('^data:image/(webp|jpeg|png);base64,.*')
+        // Solo junto con un reclamo nuevo (no se puede agregar ni cambiar la foto de uno existente)
+        && !exists(/databases/$(database)/documents/reports/$(reportId))
+        && existsAfter(/databases/$(database)/documents/reports/$(reportId));
+      allow update, delete: if false;
     }
 
     // Un apoyo por dispositivo y reclamo (el id del documento es reportId_deviceId)

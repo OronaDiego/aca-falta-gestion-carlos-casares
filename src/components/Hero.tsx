@@ -2,18 +2,19 @@ import { SignBadge } from './SignBadge';
 
 export function Hero() {
   return (
-    <header className="relative">
+    <header className="relative z-10">
       {/* Fondo rojo con trama de puntos (semitono) hecho en CSS */}
-      <div className="hero-halftone relative px-4 pb-28 pt-10 text-center text-white sm:pb-32 sm:pt-14">
+      <div className="hero-halftone relative px-4 pb-28 pt-10 text-center text-white sm:pb-32 sm:pt-14 md:flex md:min-h-[min(40vw,640px)] md:flex-col md:justify-center">
         <h1 className="font-display text-[2.15rem] leading-[0.95] tracking-tight sm:text-6xl">
-          LO QUE VEMOS
+          EL MAPA DE 
           <br />
           LO QUE FALTA
         </h1>
         <p className="mx-auto mt-6 max-w-[20rem] text-[13px] font-semibold leading-relaxed sm:max-w-md sm:text-base">
-          Cada barrio ve una parte de la ciudad.
-          <br />
-          Marcá lo que pasa cerca tuyo. Entre todos podemos ver dónde hace falta actuar.
+          Cada barrio tiene algo para contar.
+          <span className="mt-1 block text-[11px] sm:text-[14px]">
+            Marcá lo que pasa cerca tuyo. Entre todos podemos ver dónde hace falta gestión.
+          </span>
         </p>
       </div>
 

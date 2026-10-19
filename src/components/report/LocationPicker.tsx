@@ -35,7 +35,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       zoomControl: false,
       attributionControl: false,
     });
-    L.tileLayer(TILE_URL, { maxZoom: MAPA.zoomMaximo, subdomains: 'abcd' }).addTo(map);
+    L.tileLayer(TILE_URL, { maxZoom: MAPA.zoomMaximo }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.control.attribution({ position: 'bottomleft', prefix: false }).addAttribution(TILE_ATTRIBUTION).addTo(map);
     map.on('click', (e: L.LeafletMouseEvent) => onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng }));

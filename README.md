@@ -1,4 +1,4 @@
-# Acá falta la muni — Carlos Casares
+# Acá falta gestión — Carlos Casares
 
 Mapa colaborativo de reclamos urbanos del Partido de Carlos Casares (Buenos Aires). Los vecinos marcan en el mapa lo que falta, como baches, luminarias apagadas o basurales, con foto y ubicación. Cada reclamo queda público con los días que lleva sin solución.
 
@@ -6,7 +6,7 @@ Está basado en el proyecto libre [Acá Falta la Muni — Osorno](https://github
 
 ## Qué hace
 
-- **Portada:** cinta con cuenta regresiva, hero con el cartel "Acá falta la muni", mapa y pie con carteles para imprimir y botones para compartir.
+- **Portada:** cinta con cuenta regresiva, hero con el cartel "Acá falta gestión", mapa y pie con carteles para imprimir y botones para compartir.
 - **Mapa:** marcadores en rombo por categoría. Los reclamos cercanos se agrupan con un contador (amarillo = 1, naranja = 2 a 9, rojo = 10 o más).
 - **Nuevo reclamo:** descripción, categoría, foto obligatoria (se comprime en el teléfono), "ya lo reclamé antes", ubicación por dirección, GPS o tocando el mapa, y contacto opcional (no se publica).
 - **Duplicados:** si ya hay un reclamo igual a menos de 35 m, ofrece apoyarlo (+1) en lugar de crear otro.
@@ -20,7 +20,7 @@ Está basado en el proyecto libre [Acá Falta la Muni — Osorno](https://github
 | --- | --- |
 | Web | Next.js 16 (exportación estática), React 19, TypeScript |
 | Estilos | Tailwind CSS 4, tipografías Archivo Black, Anton e Inter (incluidas en el proyecto) |
-| Mapa | Leaflet + mapa base CARTO Positron (datos de OpenStreetMap) |
+| Mapa | Leaflet + teselas de OpenStreetMap en escala de grises |
 | Direcciones | Nominatim (OpenStreetMap), sin clave |
 | Base de datos | Firebase Cloud Firestore, protegida con `firestore.rules` |
 | Hosting | Firebase Hosting (también sirve cualquier hosting estático) |
@@ -82,6 +82,7 @@ Desde la web solo se puede **crear** reclamos y **sumar apoyos de a uno**. Lo de
 
 - **Ocultar** un reclamo (spam o contenido inapropiado): `is_hidden` = `true`.
 - **Marcar resuelto**: `status` = `resuelto` y `resolved_at` con la fecha.
+- **Fotos**: están en la colección `photos`, con el mismo id que el reclamo. El mapa las baja recién cuando alguien abre un reclamo.
 - **Ver contactos**: colección `contacts`. El id del documento es el id del reclamo. Desde la web no se pueden leer.
 
 ## Datos personales

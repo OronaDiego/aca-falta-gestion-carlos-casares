@@ -25,7 +25,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  if (url.hostname.endsWith('basemaps.cartocdn.com')) {
+  if (url.hostname === 'tile.openstreetmap.org') {
     event.respondWith(
       caches.open(TILES).then(async (cache) => {
         const hit = await cache.match(request);

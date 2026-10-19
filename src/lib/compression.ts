@@ -3,7 +3,8 @@
  * Se achica hasta quedar por debajo de `maxBytes`, porque Firestore admite
  * documentos de hasta 1 MB y la regla de seguridad limita la foto a ~700 KB.
  */
-export const MAX_INPUT_BYTES = 5 * 1024 * 1024;
+// Las fotos de celulares modernos (48–200 MP) pueden pesar 10–20 MB; igual se achican a < 700 KB antes de subir.
+export const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const MAX_OUTPUT_CHARS = 700_000;
 
 function loadImage(file: File): Promise<HTMLImageElement> {
@@ -23,14 +24,25 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 export async function compressImage(file: File): Promise<string> {
-  if (!/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type)) {
-    throw new Error('El archivo tiene que ser una foto JPG, PNG o WebP.');
+  // Algunos Android no informan el tipo (file.type vacío): en ese caso intentamos abrirla igual
+  if (file.type && !file.type.startsWith('image/')) {
+    throw new Error('El archivo tiene que ser una foto.');
   }
   if (file.size > MAX_INPUT_BYTES) {
-    throw new Error('La foto pesa más de 5 MB.');
+    throw new Error('La foto pesa más de 25 MB. Probá con otra o sacala con menos resolución.');
   }
 
-  const img = await loadImage(file);
+  let img: HTMLImageElement;
+  try {
+    img = await loadImage(file);
+  } catch {
+    const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+    throw new Error(
+      isHeic
+        ? 'Este navegador no puede abrir fotos HEIC. En la cámara elegí "Más compatible" (JPG) o mandá una captura de pantalla.'
+        : 'No se pudo abrir la foto. Probá con otra.'
+    );
+  }
   const attempts: [number, number][] = [
     [1280, 0.72],
     [1024, 0.68],

@@ -6,7 +6,7 @@ import './globals.css';
 import { CIUDAD } from '@/config/ciudad';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
-const title = `Acá falta la muni — Mapa de reclamos urbanos en ${CIUDAD.nombre}`;
+const title = `Acá falta gestión — Mapa de reclamos urbanos en ${CIUDAD.nombre}`;
 const description = `Mapa interactivo de reclamos urbanos en ${CIUDAD.nombre}. Reportá lo que falta en tu barrio y ayudá a construir una mejor ciudad.`;
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: CIUDAD.urlPublica,
-    siteName: 'Acá falta la muni',
+    siteName: 'Acá falta gestión',
     locale: 'es_AR',
     type: 'website',
     images: [{ url: `${BASE}/og.png`, width: 1200, height: 630, alt: `Mapa de reclamos urbanos de ${CIUDAD.nombre}` }],

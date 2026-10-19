@@ -90,7 +90,7 @@ export default function HomePage() {
       <CountdownBar />
       <Hero />
 
-      <section id="mapa" className="relative h-[82svh] min-h-[520px] w-full overflow-hidden bg-[#e9e9e9]" aria-label="Mapa de reclamos">
+      <section id="mapa" className="relative isolate z-0 h-[82svh] min-h-[520px] w-full overflow-hidden bg-[#e9e9e9]" aria-label="Mapa de reclamos">
         <MapView reports={visible} supportedIds={supportedIds} onSupport={handleSupport} focus={focus} />
 
         {/* Controles flotantes sobre el mapa */}

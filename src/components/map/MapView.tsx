@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { CATEGORIAS, CONTORNO_PARTIDO, MAPA } from '@/config/ciudad';
 import { categoryIconSvg } from '@/lib/icons';
 import { formatAgo } from '@/lib/geo-utils';
+import { getReportPhoto } from '@/lib/storage';
 import type { Report } from '@/types/report';
 import { TILE_ATTRIBUTION, TILE_URL } from './tiles';
 import { clusterColor, clusterReports, type Cluster } from './clusters';
@@ -33,12 +34,23 @@ function popupContent(r: Report, supported: boolean, onSupport: (id: string) => 
   const root = document.createElement('div');
   root.className = 'afm-popup';
 
-  const img = document.createElement('img');
-  img.className = 'afm-popup__img';
-  img.alt = 'Foto del reclamo';
-  img.loading = 'lazy';
-  img.src = r.image_url;
-  root.appendChild(img);
+  // La foto se pide recién ahora (colección `photos`); mientras tanto se ve un recuadro animado
+  const frame = document.createElement('div');
+  frame.className = 'afm-popup__img afm-popup__img--loading';
+  root.appendChild(frame);
+  getReportPhoto(r.id).then((url) => {
+    frame.classList.remove('afm-popup__img--loading');
+    if (!url) {
+      frame.classList.add('afm-popup__img--empty');
+      frame.textContent = 'Sin foto';
+      return;
+    }
+    const img = document.createElement('img');
+    img.className = 'afm-popup__img';
+    img.alt = 'Foto del reclamo';
+    img.src = url;
+    frame.replaceWith(img);
+  });
 
   const body = document.createElement('div');
   body.className = 'afm-popup__body';
@@ -106,11 +118,13 @@ export function MapView({ reports, supportedIds, onSupport, focus }: MapViewProp
       minZoom: MAPA.zoomMinimo,
       maxZoom: MAPA.zoomMaximo,
       zoomControl: false,
-      scrollWheelZoom: false, // la página scrollea: el zoom con rueda se activa al hacer clic en el mapa
+      // Zoom con la rueda del mouse (en celular no aplica: ahí se usa pellizcar con dos dedos)
+      scrollWheelZoom: true,
+      wheelPxPerZoomLevel: 100, // zoom más suave por cada movimiento de rueda (por defecto 60)
       attributionControl: false,
     });
 
-    L.tileLayer(TILE_URL, { maxZoom: MAPA.zoomMaximo, subdomains: 'abcd' }).addTo(map);
+    L.tileLayer(TILE_URL, { maxZoom: MAPA.zoomMaximo }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution(TILE_ATTRIBUTION).addTo(map);
 
@@ -119,8 +133,6 @@ export function MapView({ reports, supportedIds, onSupport, focus }: MapViewProp
       { color: '#141414', weight: 1.5, dashArray: '6 8', fill: false, interactive: false }
     ).addTo(map);
 
-    map.on('click', () => map.scrollWheelZoom.enable());
-    map.on('mouseout', () => map.scrollWheelZoom.disable());
 
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;

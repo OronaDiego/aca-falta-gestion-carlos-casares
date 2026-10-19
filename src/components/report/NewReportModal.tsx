@@ -31,6 +31,7 @@ export function NewReportModal({ reports, onClose, onSubmit, onSupportExisting }
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState('');
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoName, setPhotoName] = useState('');
   const [previously, setPreviously] = useState(false);
   const [point, setPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [address, setAddress] = useState('');
@@ -195,9 +196,28 @@ export function NewReportModal({ reports, onClose, onSubmit, onSupportExisting }
           </div>
 
           <div>
-            <label htmlFor="foto" className={label}>Foto *</label>
-            <input id="foto" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => handlePhoto(e.target.files?.[0])} className={`${input} file:mr-3 file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1 file:text-sm file:text-black`} />
-            <p className="mt-2 text-xs text-neutral-400">JPG/PNG/WebP hasta 5MB — Obligatorio</p>
+            <span className={label}>Foto *</span>
+            {/* El botón nativo muestra "Choose file" según el idioma del navegador: lo ocultamos y usamos uno propio */}
+            <label htmlFor="foto" className={`${input} flex cursor-pointer items-center gap-3 focus-within:border-brand-yellow`}>
+              <span className="shrink-0 rounded-md bg-white px-3 py-1 text-sm font-medium text-black">
+                {photo ? 'Cambiar foto' : 'Seleccionar foto'}
+              </span>
+              <span className={`truncate text-sm ${photoName ? 'text-neutral-200' : 'text-neutral-500'}`}>
+                {photoName || 'Sin foto'}
+              </span>
+              <input
+                id="foto"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  setPhotoName(f?.name ?? '');
+                  handlePhoto(f);
+                }}
+              />
+            </label>
+            <p className="mt-2 text-xs text-neutral-400">Sacá una foto o elegila de la galería (hasta 25 MB) — Obligatorio</p>
             {photoBusy && <p className="mt-2 text-sm text-neutral-300">Procesando foto…</p>}
             {/* eslint-disable-next-line @next/next/no-img-element -- vista previa de un data URL local */}
             {photo && <img src={photo} alt="Vista previa de la foto" className="mt-3 h-36 w-full rounded-xl object-cover" />}

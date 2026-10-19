@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   increment,
   onSnapshot,
   orderBy,
@@ -9,12 +10,13 @@ import {
 } from 'firebase/firestore';
 import { getDb, isDemoMode } from './firebase';
 import { nearestPlace } from './geo-utils';
-import { buildDemoReports } from './demo-data';
+import { buildDemoReports, demoPhoto } from './demo-data';
 import type { NewContactInput, NewReportInput, Report } from '@/types/report';
 
 const SUPPORTS_KEY = 'afm_casares_supports_v1';
 const DEVICE_KEY = 'afm_casares_device_v1';
-const DEMO_KEY = 'afm_casares_demo_reports_v1';
+const DEMO_KEY = 'afm_casares_demo_reports_v2';
+const DEMO_PHOTOS_KEY = 'afm_casares_demo_photos_v2';
 
 /* ------------------------------------------------------------------ */
 /* Utilidades del navegador                                            */
@@ -134,7 +136,6 @@ export async function createReport(input: NewReportInput, contact?: NewContactIn
     address: input.address.trim().slice(0, 160),
     latitude: input.latitude,
     longitude: input.longitude,
-    image_url: input.image_url,
     previously_reported: input.previously_reported,
     status: 'pendiente',
     support_count: 0,
@@ -143,7 +144,16 @@ export async function createReport(input: NewReportInput, contact?: NewContactIn
 
   const hasContact = !!contact && (contact.first_name.trim() || contact.last_name.trim() || contact.phone.trim());
 
+  photoCache.set(report.id, input.image_url);
+
   if (isDemoMode) {
+    try {
+      const photos = JSON.parse(safeGet(DEMO_PHOTOS_KEY) || '{}');
+      photos[report.id] = input.image_url;
+      safeSet(DEMO_PHOTOS_KEY, JSON.stringify(photos));
+    } catch {
+      /* sin almacenamiento: la foto queda solo en memoria */
+    }
     writeDemo([report, ...readDemo()]);
     return report;
   }
@@ -151,6 +161,7 @@ export async function createReport(input: NewReportInput, contact?: NewContactIn
   const db = getDb();
   const batch = writeBatch(db);
   batch.set(doc(db, 'reports', report.id), report);
+  batch.set(doc(db, 'photos', report.id), { report_id: report.id, image_url: input.image_url, created_at: now });
   if (hasContact) {
     batch.set(doc(db, 'contacts', report.id), {
       report_id: report.id,
@@ -184,4 +195,47 @@ export async function supportReport(reportId: string): Promise<void> {
   });
   batch.update(doc(db, 'reports', reportId), { support_count: increment(1) });
   await batch.commit();
+}
+
+/* ------------------------------------------------------------------ */
+/* Fotos (se bajan una por una, solo cuando se abre un reclamo)        */
+/* ------------------------------------------------------------------ */
+
+const photoCache = new Map<string, string>();
+const photoRequests = new Map<string, Promise<string | null>>();
+
+/** Devuelve la foto del reclamo (data URL) o null si no tiene. Cachea en memoria. */
+export function getReportPhoto(reportId: string): Promise<string | null> {
+  const cached = photoCache.get(reportId);
+  if (cached) return Promise.resolve(cached);
+  const pending = photoRequests.get(reportId);
+  if (pending) return pending;
+
+  const request = (async () => {
+    let url: string | null = null;
+    if (isDemoMode) {
+      try {
+        url = JSON.parse(safeGet(DEMO_PHOTOS_KEY) || '{}')[reportId] ?? null;
+      } catch {
+        url = null;
+      }
+      if (!url) {
+        const r = readDemo().find((x) => x.id === reportId);
+        url = r ? demoPhoto(r.category) : null;
+      }
+    } else {
+      const snap = await getDoc(doc(getDb(), 'photos', reportId));
+      url = snap.exists() ? (snap.data().image_url as string) : null;
+    }
+    if (url) photoCache.set(reportId, url);
+    photoRequests.delete(reportId);
+    return url;
+  })().catch((err) => {
+    photoRequests.delete(reportId);
+    console.error('No se pudo cargar la foto:', err);
+    return null;
+  });
+
+  photoRequests.set(reportId, request);
+  return request;
 }
