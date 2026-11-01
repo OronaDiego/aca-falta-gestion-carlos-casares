@@ -20,6 +20,7 @@ export function CountdownBar() {
       <p className="mx-auto flex max-w-5xl items-baseline justify-center gap-1.5 whitespace-nowrap px-3 py-6 text-center text-[13px] min-[400px]:text-sm sm:gap-2 sm:text-lg">
         <strong className="font-extrabold tracking-wide">FALTAN {days ?? '—'}</strong>
         <span className="font-light tracking-wide">{CUENTA_REGRESIVA.texto}</span>
+        <strong className="font-extrabold tracking-wide">{CUENTA_REGRESIVA.destacado}</strong>
       </p>
     </div>
   );

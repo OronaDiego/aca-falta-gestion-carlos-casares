@@ -10,8 +10,8 @@ export function Hero() {
           <br />
           LO QUE FALTA
         </h1>
-        <p className="mx-auto mt-6 max-w-[20rem] text-[13px] font-semibold leading-relaxed sm:max-w-md sm:text-base">
-          Cada barrio tiene algo para contar.
+        <p className="mx-auto mt-6 max-w-[20rem] sm:text-[20px] font-semibold leading-relaxed sm:max-w-md sm:text-base">
+          Cada barrio tiene algo para contar
           <span className="mt-1 block text-[11px] sm:text-[14px]">
             Marcá lo que pasa cerca tuyo. Entre todos podemos ver dónde hace falta gestión.
           </span>

@@ -1,7 +1,4 @@
-import { Download } from 'lucide-react';
 import { CIUDAD } from '@/config/ciudad';
-
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 function shareLinks() {
   const url = encodeURIComponent(CIUDAD.urlPublica);
@@ -19,26 +16,7 @@ export function Footer() {
   const links = shareLinks();
   return (
     <footer className="bg-brand-yellow px-4 pb-10 pt-8 text-center text-ink">
-      <p className="mx-auto max-w-md text-[15px] font-semibold leading-snug">
-        Descargá tu cartel de <strong className="font-extrabold">&lsquo;Acá falta Gestión&rsquo;</strong> para intervenir el
-        lugar del reclamo
-      </p>
-
-      <div className="mt-4 flex justify-center gap-10">
-        {[
-          { href: `${BASE}/carteles/cartel-acafaltalamuni-bn.png`, label: 'Blanco y Negro' },
-          { href: `${BASE}/carteles/cartel-acafaltalamuni-color.png`, label: 'Color' },
-        ].map((c) => (
-          <a key={c.label} href={c.href} download className="group flex flex-col items-center gap-2 text-xs font-medium">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-brand-yellow transition-transform group-hover:scale-110">
-              <Download className="h-5 w-5" strokeWidth={2.5} aria-hidden />
-            </span>
-            {c.label}
-          </a>
-        ))}
-      </div>
-
-      <p className="mt-7 text-[15px] font-bold">Compartí el mapa en tus redes:</p>
+      <p className="text-[15px] font-bold">Compartí el mapa en tus redes:</p>
       <div className="mt-3 flex justify-center gap-7">
         <a href={links.facebook} target="_blank" rel="noopener noreferrer" aria-label="Compartir en Facebook" className="hover:opacity-70">
           <svg viewBox="0 0 24 24" className={icon} aria-hidden>
@@ -65,7 +43,7 @@ export function Footer() {
       </div>
 
       <p className="mx-auto mt-8 max-w-md text-[11px] leading-relaxed text-ink/70">
-        Proyecto comunitario de {CIUDAD.nombre}. Basado en el software libre «Acá Falta la Muni» de Pablo Benavides
+        Aplicación realizada por UNIDOS POR CASARES<br/>Desarrolladores: Diego Orona | Emmanuel Macías<br/>Basado en el software libre «Acá Falta la Muni» de Pablo Benavides
         (AGPL-3.0) ·{' '}
         <a href={CIUDAD.codigoFuente} target="_blank" rel="noopener noreferrer" className="underline">
           código fuente
