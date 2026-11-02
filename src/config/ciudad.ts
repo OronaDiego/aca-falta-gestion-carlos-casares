@@ -29,7 +29,6 @@ export const CIUDAD = {
 export const CUENTA_REGRESIVA = {
   fechaObjetivo: '2027-10-24T08:00:00-03:00',
   texto: 'DÍAS PARA ELEGIR OTRA CIUDAD',
-  destacado: 'SILVIO 2027',
 } as const;
 
 export const MAPA = {

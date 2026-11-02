@@ -16,7 +16,9 @@ export function Footer() {
   const links = shareLinks();
   return (
     <footer className="bg-brand-yellow px-4 pb-10 pt-8 text-center text-ink">
-      <p className="text-[15px] font-bold">Compartí el mapa en tus redes:</p>
+      <p className="text-2xl font-extrabold tracking-wide">SILVIO 2027</p>
+
+      <p className="mt-6 text-[15px] font-bold">Compartí el mapa en tus redes:</p>
       <div className="mt-3 flex justify-center gap-7">
         <a href={links.facebook} target="_blank" rel="noopener noreferrer" aria-label="Compartir en Facebook" className="hover:opacity-70">
           <svg viewBox="0 0 24 24" className={icon} aria-hidden>
@@ -43,11 +45,7 @@ export function Footer() {
       </div>
 
       <p className="mx-auto mt-8 max-w-md text-[11px] leading-relaxed text-ink/70">
-        Aplicación realizada por UNIDOS POR CASARES<br/>Desarrolladores: Diego Orona | Emmanuel Macías<br/>Basado en el software libre «Acá Falta la Muni» de Pablo Benavides
-        (AGPL-3.0) ·{' '}
-        <a href={CIUDAD.codigoFuente} target="_blank" rel="noopener noreferrer" className="underline">
-          código fuente
-        </a>
+        Aplicación realizada por UNIDOS POR CASARES<br/>Desarrolladores: Diego Orona | Emmanuel Macías
       </p>
     </footer>
   );
