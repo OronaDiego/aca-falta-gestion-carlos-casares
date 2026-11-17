@@ -94,6 +94,26 @@ function popupContent(r: Report, supported: boolean, onSupport: (id: string) => 
   return root;
 }
 
+/**
+ * Ficha con varios reclamos apilados. Se usa cuando un grupo no se puede separar con zoom:
+ * reclamos en el mismo punto exacto (misma dirección buscada) o a pocos metros, ya en el zoom máximo.
+ */
+function clusterListContent(
+  reports: Report[],
+  supportedIds: Set<string>,
+  onSupport: (id: string) => void
+): HTMLElement {
+  const root = document.createElement('div');
+  root.className = 'afm-popup-list';
+  const head = document.createElement('p');
+  head.className = 'afm-popup-list__head';
+  head.textContent = `${reports.length} reclamos en este lugar`;
+  root.appendChild(head);
+  const sorted = [...reports].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  for (const r of sorted) root.appendChild(popupContent(r, supportedIds.has(r.id), onSupport));
+  return root;
+}
+
 export function MapView({ reports, supportedIds, onSupport, focus }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -173,7 +193,12 @@ export function MapView({ reports, supportedIds, onSupport, focus }: MapViewProp
             const bounds = L.latLngBounds(c.reports.map((r) => [r.latitude, r.longitude] as [number, number]));
             const samePoint = bounds.getNorthEast().equals(bounds.getSouthWest(), 1e-6);
             if (samePoint || map.getZoom() >= MAPA.zoomMaximo - 1) {
-              map.setView(bounds.getCenter(), MAPA.zoomMaximo);
+              // Ya no hay más zoom que los separe: mostramos todos los reclamos del grupo en una lista
+              const { supportedIds: supNow, onSupport: supportNow } = dataRef.current;
+              L.popup({ className: 'afm-popup-wrap', maxWidth: 280, minWidth: 240, offset: [0, -14], autoPanPaddingTopLeft: [16, 200] })
+                .setLatLng(bounds.getCenter())
+                .setContent(clusterListContent(c.reports, supNow, supportNow))
+                .openOn(map);
             } else {
               map.flyToBounds(bounds, { padding: [60, 60], maxZoom: MAPA.zoomMaximo, duration: 0.6 });
             }

@@ -240,3 +240,28 @@ body {
   color: #c7c9cf;
   cursor: default;
 }
+
+/* Lista de reclamos en el mismo lugar (grupo que no se separa con zoom) */
+.afm-popup-list {
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.afm-popup-list__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 !important;
+  padding: 10px 40px 10px 14px;
+  background: #17191d;
+  border-bottom: 1px solid #2e3138;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-brand-yellow);
+}
+.afm-popup-list .afm-popup + .afm-popup {
+  border-top: 6px solid #0e0f12;
+}
+
